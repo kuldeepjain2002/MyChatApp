@@ -150,8 +150,8 @@ const fetchChats = asyncHandler(async (req, res) => {
 });
 
 const accessChat = asyncHandler(async (req, res) => {
-  console.log("in the accesschat");
-  console.log(req);
+  // console.log("in the accesschat");
+  // console.log(req);
   const { userId } = req.body;
   if (!userId) {
     console.log("userID could not recieve");
