@@ -72,6 +72,16 @@ io.on("connection", (socket) => {
     });
   });
 
+  socket.on("istyping", (chatid) => {
+    console.log("isTyping enter");
+    socket.in(chatid).emit("senderistyping");
+  });
+
+  socket.on("stoptyping", (chatid) => {
+    console.log("stoptyping enter");
+    socket.in(chatid).emit("senderstoptyping");
+  });
+
   socket.off("setup", () => {
     console.log("USER DISCONNECTED");
     socket.leave(userData._id);

@@ -28,6 +28,8 @@ const ENDPOINT = "http://localhost:5000";
 var socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
+  const [typing, setTyping] = useState(false);
+  const [istyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
@@ -40,9 +42,17 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     socket.emit("setup", user);
     socket.on("connected", () => {
       setSocketConnected(true);
-      console.log("connection made true");
+      // console.log("connection made true");
     });
-    console.log("connection made");
+
+    // console.log("connection made");
+
+    socket.on("senderistyping", () => {
+      setIsTyping(true);
+    });
+    socket.on("senderstoptyping", () => {
+      setIsTyping(false);
+    });
   }, []);
 
   const getMessages = async () => {
@@ -61,9 +71,9 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         config
       );
 
-      console.log("messagesssssssssss", messages);
+      // console.log("messagesssssssssss", messages);
       setMessages(messageList.data);
-      console.log("messagesssssssssss", messages);
+      // console.log("messagesssssssssss", messages);
       setLoading(false);
 
       socket.emit("join chat", selectedChat._id);
@@ -83,6 +93,8 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const sendMessage = async (e) => {
     if (e.key === "Enter" && newMessage) {
       try {
+        socket.emit("stoptyping", selectedChat._id);
+        setTyping(false);
         const config = {
           headers: {
             "Content-type": "application/json",
@@ -101,7 +113,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         setNewMessage("");
         setMessages([...messages], data);
         setLoading(false);
-        console.log("loading turned off -- ", loading, messages, newMessage);
+        // console.log("loading turned off -- ", loading, messages, newMessage);
 
         socket.emit("new message", data);
         getMessages();
@@ -137,6 +149,16 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
   const typingHandler = (e) => {
     setNewMessage(e.target.value);
+    if (!socketConnected) return;
+    // console.log(e.target.value);
+    if (e.target.value === "") {
+      console.log("empty message");
+      socket.emit("stoptyping", selectedChat._id);
+      setTyping(false);
+    } else {
+      socket.emit("istyping", selectedChat._id);
+      setTyping(true);
+    }
   };
   return (
     <>
@@ -235,7 +257,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                                 maxWidth: "75%",
                               }}
                             >
-                              {console.log(m.content)}
+                              {/* {console.log(m.content)} */}
                               {m.content}
                             </span>
                           </>
@@ -269,6 +291,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                       </div>
                     );
                   })}
+                {istyping ? <p>typing</p> : <p></p>}
               </ScrollableFeed>
               // </div>
             )}
